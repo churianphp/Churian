@@ -3,9 +3,9 @@
 # Define Constants
 # Configure For Database
 
-define("DBUSERNAME", "churiandbadmin");
+define("DBUSERNAME", "id9348270_churiandb");
+define("DBNAME", "id9348270_churiandb");
 define("DBPASS", "#ChurianDBAdmin007");
-define("DBNAME", "churiandb");
 define("DBHOST", "localhost");
 define("DBTYPE", "mysql");
 

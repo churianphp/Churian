@@ -1,11 +1,11 @@
 <?php
 
-# Define Constants
 # Configure For Database
+# Define Constants
 
-define("DBUSERNAME", "id9348270_churiandbadmin");
-define("DBNAME", "id9348270_churiandb");
-define("DBPASS", "#ChurianDBAdmin007");
+define("DBUSERNAME", "id9356761_churiandbadmin");
+define("DBNAME", "id9356761_churiandb");
+define("DBPASS", "#ChurianDBAdmin");
 define("DBHOST", "localhost");
 define("DBTYPE", "mysql");
 

@@ -10,7 +10,7 @@ define("APP_NAME", "Churian");
 # App URLs
 define("URL", "http://churian.uphero.com/");
 define("IMAGE_URL", URL."public/images/");
-define("CSS_URL", URL."public/style/");
+define("CSS_URL", URL."public/styles/");
 define("JS_URL", URL."public/js/");
 
 ?>

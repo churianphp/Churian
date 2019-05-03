@@ -5,7 +5,7 @@
 				<script src="<?=JS_URL?>app.js"></script>
 				<?php if (isset($this->js)): ?>
 					<?php foreach ($this->js as $js): ?>
-						<script src="<?=JS_URL.$js?>.js" type="text/javascript"></script>
+						<script src="<?=JS_URL.$js?>"></script>
 					<?php endforeach; ?>
 				<?php endif; ?>
 			</footer>

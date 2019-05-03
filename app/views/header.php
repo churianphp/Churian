@@ -20,9 +20,9 @@
 		<meta name="description" content="Churian">
 		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 
-		<link rel="icon" href="<?=IMAGE_URL?>favicon.png" type="image/x-icon">
-		<link rel="stylesheet" href="<?=CSS_URL?>lib/bootstrap.min.css" type="text/css">
-		<link rel="stylesheet" href="<?=CSS_URL?>style.css" type="text/css">
+		<link rel="icon" type="image/x-icon" href="<?=IMAGE_URL?>favicon.png">
+		<link rel="stylesheet" type="text/css" href="<?=CSS_URL?>lib/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="<?=CSS_URL?>style.css">
 
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sunflower:300">
 	</head>

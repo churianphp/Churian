@@ -3,7 +3,7 @@
 class Home extends Controller {
 	public function __construct() {
 		parent::__construct();
-		$this->view->js = [
+		$this->view->scripts = [
 			"home.js"
 		];
 	}

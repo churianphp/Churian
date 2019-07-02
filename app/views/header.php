@@ -1,4 +1,4 @@
-<?php global $CONF, $LANG; ?>
+<?php global $VARS, $TEXTS; ?>
 
 <!DOCTYPE html>
 

@@ -19,7 +19,7 @@
 	<section>
 		<div data-loop="false" data-autoplay="false" data-simulate-touch="true" class="swiper-container swiper-slider swiper-variant-1 bg-gray-base">
 			<div class="swiper-wrapper text-center">
-				<div style="height: 800px" data-slide-bg="<?=IMAGE_URL?>giphy.gif" class="swiper-slide">
+				<div style="height: 760px" data-slide-bg="<?=IMAGE_URL?>giphy.gif" class="swiper-slide">
 					<div class="swiper-slide-caption">
 						<div class="shell">
 							<div class="range range-sm-center">

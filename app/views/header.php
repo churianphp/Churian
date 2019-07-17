@@ -4,7 +4,8 @@
 
 <html lang="en" class="nojs">
 	<head>
-		<title>Churian | <?=isset($this->title) ? $this->title : "Home"?></title>
+		<title>Churian | <?=$this->title?></title>
+
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta charset="utf-8">
 
@@ -29,4 +30,3 @@
 
 	<body>
 		<main class="main">
-			<?php if (isset($this->header)) require($this->header); ?>

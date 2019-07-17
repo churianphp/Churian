@@ -1,6 +1,6 @@
 <?php
 
-class Model {
+abstract class Model {
 	protected $now, $db;
 
 	public function __construct() {
@@ -10,12 +10,6 @@ class Model {
 		$this->texts = $TEXTS;
 		$this->now = $VARS["datetime"];
 		$this->db = new DBQuery;
-	}
-
-	public function load($model) {
-		require "app/models/$model.php";
-		$classname = ucfirst($model)."Model";
-		return new $classname;
 	}
 }
 

@@ -1,24 +1,22 @@
 <?php
 
 class UserModel extends Model {
-	protected const TABLE = "user";
-
-	public function addPerson($name, $email, $password) {
+	public function addUser($name, $email, $password) {
 		try {
-			$this->db->saveInto("INSERT", self::TABLE, [
+			$this->db->saveInto("INSERT", "user", [
 				":password" => $password,
 				":email" => $email,
 				":name" => $name
 			])->execute();
 		} catch (PDOException $bug) {
-			die($bug->getMessage());
+			die ($bug->getMessage());
 		}
 	}
 
 	public function getAll($tracker, $autoLoad) {
 		$limits = $autoLoad === 0 ? [$tracker, 10] : [0, $autoLoad];
 
-		$data = $this->db->select(["user.name,user.email"])->from(self::TABLE)
+		$data = $this->db->select(["user.name,user.email"])->from("user")
 			->where(["admin"=>0])->limit($limits[0], $limits[1])
 			->fetch();
 
@@ -33,7 +31,7 @@ class UserModel extends Model {
 	}
 
 	protected function get($column, $value) {
-		$data = $this->db->select()->from(self::TABLE)
+		$data = $this->db->select()->from("user")
 			->where([$column=>$value])
 			->fetch();
 
@@ -50,9 +48,11 @@ class UserModel extends Model {
 
 	public function numberOfUsers() {
 		return $this->db->selectCount("id")
-			->from(self::TABLE)->where(["admin"=>0])
+			->from("user")->where(["admin"=>0])
 			->fetch(false, true)[0][0];
 	}
 }
+
+return new UserModel;
 
 ?>

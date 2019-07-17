@@ -1,6 +1,6 @@
 <?php 
 
-class Session {
+class Sessions {
 	private function __construct() {
 
 	}
@@ -25,7 +25,6 @@ class Session {
 		if (isset($_SESSION[$key])) unset($_SESSION[$key]);
 	}
 
-	# Should Be Used For Debugging Purposes Only
 	public static function terminateAll() {
 		session_destroy();
 	}

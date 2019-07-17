@@ -1,11 +1,12 @@
 <?php
 
  class Bootstrap {
-	private $controller = "Home";
-	private $method = "index";
+	private $controller = "home", $method = "index";
 
 	public function __construct() {
-		if (isset($_GET["url"])) $params = explode("/", filter_var(rtrim($_GET["url"], "/"), FILTER_SANITIZE_URL));
+		if (isset($_GET["params"])) {
+			$params = explode("/", filter_var(rtrim($_GET["params"], "/"), FILTER_SANITIZE_URL));
+		}
 
 		if (isset($params[0])) {
 			if (file_exists("app/controllers/$params[0].php")) {
@@ -14,8 +15,7 @@
 			}
 		}
 
-		require "app/controllers/$this->controller.php";
-		$this->controller = new $this->controller;
+		$this->controller = require "app/controllers/$this->controller.php";
 
 		if (isset($params[1])) {
 			if (method_exists($this->controller, $params[1])) {

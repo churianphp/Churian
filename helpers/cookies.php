@@ -1,6 +1,6 @@
 <?php
 
-class Cookie {
+class Cookies {
 	private function __construct() {
 
 	}
@@ -25,7 +25,7 @@ class Cookie {
 		if (isset($_SERVER['HTTP_COOKIE'])) {
 			$cookies = explode(';', $_SERVER['HTTP_COOKIE']);
 
-			foreach($cookies as $cookie) {
+			foreach ($cookies as $cookie) {
 				$parts = explode('=', $cookie);
 				$name = trim($parts[0]);
 				setcookie($name, '', time()-60*60*24*31);

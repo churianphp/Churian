@@ -244,7 +244,7 @@ class DBQuery {
 
 			return empty($result) ? false : $result;
 		} catch (PDOException $bug) {
-			die("Error: ".$bug->getMessage());
+			die ("Error: ".$bug->getMessage());
 		}
 	}
 

@@ -1,6 +1,6 @@
 <?php 
 
-Session::init();
+Sessions::init();
 
 date_default_timezone_set("Africa/Lagos");
 

@@ -10,7 +10,7 @@ require "configs/texts.php";
 require "configs/vars.php";
 
 # Load Database
-require "configs/database/query.php";
+require "configs/database/querier.php";
 
 require "helpers/sanitizer.php";
 require "helpers/auth.php";

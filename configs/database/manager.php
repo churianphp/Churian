@@ -2,7 +2,7 @@
 
 require "config.php";
 
-class Database {
+class DBManager {
 	private static $instance;
 
 	private $charset = "utf8";
@@ -13,7 +13,7 @@ class Database {
 	private $host = DBHOST;
 	private $connection;
 
-	public static function getDatabase() {
+	public static function getInstance() {
 		if (!self::$instance) self::$instance = new self();
 		return self::$instance;
 	}

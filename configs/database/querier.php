@@ -1,8 +1,9 @@
 <?php
 
-require "connect.php";
+require "manager.php";
 
-class DBQuery {
+class DBQuerier {
+	private $connection;
 	private $equatorType = "=";
 	private $lastInsertId = "";
 	private $executeType = "";
@@ -11,10 +12,9 @@ class DBQuery {
 	private $result = "";
 	private $table = "";
 	private $stmt = "";
-	private $db;
 
 	public function __construct() {
-		$this->db = Database::getDatabase()->getConnection();
+		$this->connection = DBManager::getInstance()->getConnection();
 	}
 
 	public function select($columns=[]) {
@@ -213,7 +213,7 @@ class DBQuery {
 		$fetch = $fetchType == true ? "fetchAll": "fetch";
 
 		try {
-			$this->result = $this->db->prepare($this->stmt);
+			$this->result = $this->connection->prepare($this->stmt);
 			unset($this->stmt);
 
 			if (isset($this->bindData)) {
@@ -254,16 +254,16 @@ class DBQuery {
 
 		switch ($this->executeType) {
 			case "INSERT":
-				$this->result = $this->db->prepare("INSERT INTO ".$this->table." (".$this->commaPreFix($this->insertColumns).") VALUES($data)");
+				$this->result = $this->connection->prepare("INSERT INTO ".$this->table." (".$this->commaPreFix($this->insertColumns).") VALUES($data)");
 				unset($this->insertColumns);
 				break;
 
 			case "UPDATE":
-				$this->result = $this->db->prepare("UPDATE ".$this->table." SET ".$this->stmt."");
+				$this->result = $this->connection->prepare("UPDATE ".$this->table." SET ".$this->stmt."");
 				break;
 
 			case "DELETE":
-				$this->result = $this->db->prepare($this->stmt);
+				$this->result = $this->connection->prepare($this->stmt);
 				break;
 		}
 
@@ -282,7 +282,7 @@ class DBQuery {
 
 		unset($this->result);
 
-		if ($this->executeType == "INSERT") $this->lastInsertId = $this->db->lastInsertId();
+		if ($this->executeType == "INSERT") $this->lastInsertId = $this->connection->lastInsertId();
 	}
 
 	public function getLastInsertId() {
@@ -290,15 +290,15 @@ class DBQuery {
 	}
 
 	public function t_begin() {
-		return $this->db->beginTransaction();
+		return $this->connection->beginTransaction();
 	}
 
 	public function t_commit() {
-		return $this->db->commit();
+		return $this->connection->commit();
 	}
 
 	public function t_rollback() {
-		return $this->db->rollBack();
+		return $this->connection->rollBack();
 	}
 
 	public function viewQuery() {

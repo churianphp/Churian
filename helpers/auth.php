@@ -9,12 +9,12 @@ class Auth {
 
 	}
 
-	public static function hash($str) {
-		return password_hash($str, PASSWORD_DEFAULT);
+	public static function hash($password) {
+		return password_hash($password, PASSWORD_DEFAULT);
 	}
 
-	public static function check($str, $hash) {
-		return password_verify($str, $hash) ? true : false;
+	public static function check($password, $hash) {
+		return password_verify($password, $hash);
 	}
 }
 

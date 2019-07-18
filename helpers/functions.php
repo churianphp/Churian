@@ -11,11 +11,11 @@ function removeSlashes($str) {
 	return get_magic_quotes_gpc() ? stripslashes($str) : $str;
 }
 
-function sanitizeString($str) {
+function harmlessString($str) {
 	return htmlentities(strip_tags(removeSlashes($str)));
 }
 
-function sanitizeHTML($str) {
+function harmlessHTML($str) {
 	return htmlentities(removeSlashes($str));
 }
 

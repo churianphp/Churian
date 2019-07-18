@@ -26,7 +26,7 @@ class Sessions {
 	}
 
 	public static function terminateAll() {
-		session_destroy();
+		return session_destroy();
 	}
 }
 

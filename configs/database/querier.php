@@ -184,7 +184,7 @@ class DBQuerier {
 		return $this;
 	}
 
-	public function saveInto($type, $table, $data) {
+	public function saveInto($table, $type, $data) {
 		$this->table = sprintf("%s", $table);
 		$this->executeType = strtoupper($type);
 		$this->stmt = "";
@@ -197,6 +197,14 @@ class DBQuerier {
 		}
 
 		return $this->setData("", $data);
+	}
+
+	public function create($table, $data) {
+		return $this->saveInto($table, "INSERT", $data);
+	}
+
+	public function update($table, $data) {
+		return $this->saveInto($table, "UPDATE", $data);
 	}
 
 	public function delete($table) {
@@ -289,16 +297,16 @@ class DBQuerier {
 		if ($this->lastInsertId) return (int) $this->lastInsertId;
 	}
 
-	public function t_begin() {
+	public function beginTransaction() {
 		return $this->connection->beginTransaction();
 	}
 
-	public function t_commit() {
-		return $this->connection->commit();
+	public function rollBack() {
+		return $this->connection->rollBack();
 	}
 
-	public function t_rollback() {
-		return $this->connection->rollBack();
+	public function commit() {
+		return $this->connection->commit();
 	}
 
 	public function viewQuery() {

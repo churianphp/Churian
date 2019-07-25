@@ -9,7 +9,7 @@ abstract class Model {
 		$this->vars = $VARS;
 		$this->texts = $TEXTS;
 		$this->now = $VARS["datetime"];
-		$this->db = new DBQuery;
+		$this->db = new DBQuerier;
 	}
 }
 

@@ -1,9 +1,9 @@
 <?php
 
 class UserModel extends Model {
-	public function addUser($name, $email, $password) {
+	public function createUser($name, $email, $password) {
 		try {
-			$this->db->saveInto("INSERT", "user", [
+			$this->db->create("user", [
 				":password" => $password,
 				":email" => $email,
 				":name" => $name

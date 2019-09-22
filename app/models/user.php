@@ -13,10 +13,10 @@ class UserModel extends Model {
 		}
 	}
 
-	public function getAll($tracker, $autoLoad) {
+	public function getAllUsers($tracker, $autoLoad) {
 		$limits = $autoLoad === 0 ? [$tracker, 10] : [0, $autoLoad];
 
-		$data = $this->db->select(["user.name,user.email"])->from("user")
+		$data = $this->db->select(["user.name", "user.email"])->from("user")
 			->where(["admin"=>0])->limit($limits[0], $limits[1])
 			->fetch();
 

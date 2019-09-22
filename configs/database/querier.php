@@ -4,11 +4,11 @@ require "manager.php";
 
 class DBQuerier {
 	private $connection;
-	private $equatorType = "=";
+	private $equatorSymbol = "=";
 	private $lastInsertId = "";
-	private $executeType = "";
 	private $logicalType = "";
-	private $bindData = [];
+	private $operation = "";
+	private $bindings = [];
 	private $result = "";
 	private $table = "";
 	private $stmt = "";
@@ -50,40 +50,39 @@ class DBQuerier {
 		return $this;
 	}
 
-	public function where($where=[], $equatorType=null){
-		$cond = " WHERE ";
+	public function where($columns=[], $equatorSymbol="="){
+		$condition = " WHERE ";
 
-		if ($equatorType !== null) $this->equatorType = $equatorType;
-		else $this->equatorType = "=";
+		$this->equatorSymbol = $equatorSymbol;
 
-		return $this->setData($cond, $where);
+		return $this->setData($condition, $columns);
 	}
 
-	public function cond($condType, $columns=[], $equatorType=null) {
+	protected function condition($condition, $columns=[], $equatorSymbol) {
 		static $i = 0;
 
-		switch (strtoupper($condType)) {
-			case "AND":
-			case "OR":
-				$type = " ".$condType." ";
-				break;
-		}
+		$this->equatorSymbol = $equatorSymbol;
 
-		$this->equatorType = $equatorType === null ? "=" : $equatorType;
-
-		$new_key = array();
-		$new_value = array();
+		$newValues = array();
+		$newKeys = array();
 
 		foreach ($columns as $key => $value) {
-			array_push($new_key, $key."_____".$i);
-			array_push($new_value, $value);
+			array_push($newKeys, $key."_____".$i);
+			array_push($newValues, $value);
 		}
 
-		$data = array_combine($new_key, $new_value);
-
+		$data = array_combine($newKeys, $newValues);
 		++$i;
 
-		return $this->setData(strtoupper($type), $data);
+		return $this->setData(" $condition ", $data);
+	}
+
+	public function and($columns=[], $equatorSymbol="=") {
+		return $this->condition("AND", $columns, $equatorSymbol);
+	}
+
+	public function or($columns=[], $equatorSymbol="=") {
+		return $this->condition("OR", $columns, $equatorSymbol);
 	}
 
 	public function like($column, $param, $type="") {
@@ -101,22 +100,21 @@ class DBQuerier {
 		foreach ($param as $key => $keyword) {
 			$key = sprintf("%s", $key);
 
-			switch (strtolower($type)) {
-				case "start":
+			switch ($type) {
+				case "START":
 					$keyword = sprintf("%s", "%".$keyword);
 					break;
 
-				case "end":
-					$keyword = sprintf("%s", $keyword."%");
+				case "BOTH":
+					$keyword = sprintf("%s", "%".$keyword."%");
 					break;
 
-				case "both":
-				default:
-					$keyword = sprintf("%s", "%".$keyword."%");
+				case "END":
+					$keyword = sprintf("%s", $keyword."%");
 					break;
 			}
 
-			$this->bindData[$key] = $keyword;
+			$this->bindings[$key] = $keyword;
 			$this->stmt .= $stmt." :$key";
 		}
 
@@ -140,56 +138,52 @@ class DBQuerier {
 		return $this;
 	}
 
-	public function nJoin($table) {
+	public function naturalJoin($table) {
 		$stmt = " NATURAL JOIN ".sprintf("%s", $table);
 		$this->stmt .= $stmt;
 		return $this;
 	}
 
-	public function join($table, $jointype) {
-		$stmt = " ".strtoupper($jointype)." ";
-		$stmt .= $this->commaPrefix($table);
+	public function join($tables, $joinStyle="LEFT JOIN") {
+		$stmt = " ".strtoupper($joinStyle)." ";
+		$stmt .= $this->commaPrefix($tables);
 		$this->stmt .= $stmt;
 		return $this;
 	}
 
-	public function on($cond1, $cond2) {
+	public function on($part1, $part2) {
 		$stmt = " ON ";
-		$stmt .= sprintf("%s", $cond1)."=".sprintf("%s", $cond2);
+		$stmt .= sprintf("%s", $part1)."=".sprintf("%s", $part2);
 		$this->stmt .= $stmt;
 		return $this;
 	}
 
-	public function orderBy($order, $orderType="") {
+	public function orderBy($order, $descending=false) {
 		$stmt = " ORDER BY ";
 
-		switch (strtoupper($orderType)) {
-			case "DESC":
-				$stmt .= sprintf("%s", $order)." $orderType";
-				break;
-
-			case "ASC":
-			default:
-				$stmt .= sprintf("%s", $order)." ASC";
-				break;
+		if ($descending === true) {
+			$stmt .= sprintf("%s", $order)." DESC";
+		} else {
+			$stmt .= sprintf("%s", $order)." ASC";
 		}
 
 		$this->stmt .= $stmt;
+
 		return $this;
 	}
 
-	public function limit($min, $max="") {
-		if ($max !== "") $this->stmt .= " LIMIT ".intval((int) $min).", ".intval((int) $max);
-		else $this->stmt .= " LIMIT ".intval($min);
+	public function limit($min, $max=null) {
+		if ($max !== null) $this->stmt .= " LIMIT $min, $max";
+		else $this->stmt .= " LIMIT $min";
 		return $this;
 	}
 
-	public function saveInto($table, $type, $data) {
+	protected function saveInto($table, $data, $operation) {
 		$this->table = sprintf("%s", $table);
-		$this->executeType = strtoupper($type);
+		$this->operation = strtoupper($operation);
 		$this->stmt = "";
 
-		if ($this->executeType === "INSERT") {
+		if ($this->operation === "INSERT") {
 			foreach ($data as $key => $value) {
 				$key = preg_replace("/^:/", "", $key);
 				$this->insertColumns[] = $key;
@@ -200,33 +194,33 @@ class DBQuerier {
 	}
 
 	public function create($table, $data) {
-		return $this->saveInto($table, "INSERT", $data);
+		return $this->saveInto($table, $data, "INSERT");
 	}
 
 	public function update($table, $data) {
-		return $this->saveInto($table, "UPDATE", $data);
+		return $this->saveInto($table, $data, "UPDATE");
 	}
 
 	public function delete($table) {
-		$this->executeType = "DELETE";
+		$this->operation = "DELETE";
 		$stmt = "DELETE FROM $table";
 		$this->stmt = $stmt;
 		return $this;
 	}
 
-	public function fetch($fetchType=false, $arrayType=false) {
+	public function fetch($fetchAll=false, $normalArray=false) {
 		$returnData = [];
 		$dataArray = [];
 
-		$fetch = $fetchType == true ? "fetchAll": "fetch";
+		$fetchMethod = $fetchAll ? "fetchAll": "fetch";
 
 		try {
 			$this->result = $this->connection->prepare($this->stmt);
 			unset($this->stmt);
 
-			if (isset($this->bindData)) {
-				$dataArray = $this->bindData;
-				unset($this->bindData);
+			if (isset($this->bindings)) {
+				$dataArray = $this->bindings;
+				unset($this->bindings);
 			}
 
 			foreach ($dataArray as $key => $value) {
@@ -235,20 +229,20 @@ class DBQuerier {
 
 			$this->result->execute();
 
-			if ($arrayType == true) {
-				while ($row = $this->result->$fetch(PDO::FETCH_NUM)) {
+			if ($normalArray) {
+				while ($row = $this->result->$fetchMethod(PDO::FETCH_NUM)) {
 					array_push($returnData, $row);
 				}
 			} else {
-				while ($row = $this->result->$fetch()) {
+				while ($row = $this->result->$fetchMethod()) {
 					array_push($returnData, $row);
 				}
 			}
 
 			$result = $returnData;
 
-			unset($returnData);
 			unset($this->result);
+			unset($returnData);
 
 			return empty($result) ? false : $result;
 		} catch (PDOException $bug) {
@@ -257,10 +251,10 @@ class DBQuerier {
 	}
 
 	public function execute() {
-		$data = $this->commaPrefix(array_keys($this->bindData));
+		$data = $this->commaPrefix(array_keys($this->bindings));
 		$dataArray = [];
 
-		switch ($this->executeType) {
+		switch ($this->operation) {
 			case "INSERT":
 				$this->result = $this->connection->prepare("INSERT INTO ".$this->table." (".$this->commaPreFix($this->insertColumns).") VALUES($data)");
 				unset($this->insertColumns);
@@ -277,9 +271,9 @@ class DBQuerier {
 
 		unset($this->stmt);
 
-		if ($this->bindData) {
-			$dataArray = $this->bindData;
-			unset($this->bindData);
+		if ($this->bindings) {
+			$dataArray = $this->bindings;
+			unset($this->bindings);
 		}
 
 		foreach ($dataArray as $key => $value) {
@@ -287,10 +281,10 @@ class DBQuerier {
 		}
 
 		$this->result->execute();
+		
+		if ($this->operation == "INSERT") $this->lastInsertId = $this->connection->lastInsertId();
 
 		unset($this->result);
-
-		if ($this->executeType == "INSERT") $this->lastInsertId = $this->connection->lastInsertId();
 	}
 
 	public function getLastInsertId() {
@@ -301,11 +295,11 @@ class DBQuerier {
 		return $this->connection->beginTransaction();
 	}
 
-	public function rollBack() {
+	public function rollBackTransaction() {
 		return $this->connection->rollBack();
 	}
 
-	public function commit() {
+	public function commitTransaction() {
 		return $this->connection->commit();
 	}
 
@@ -313,16 +307,16 @@ class DBQuerier {
 		echo $this->stmt;
 	}
 
-	private function setData($cond, $data) {
+	private function setData($condition, $data) {
 		foreach ($data as $key => $value) {
 			$key1 = preg_match("/(_____\d+)$/", $key) ? preg_replace("/(_____\d+)$/", "", $key) : sprintf("%s", $key);
 			$key2 = explode(".", $key);
 			$key2 = isset($key2[1]) ? $key2[1] : $key2[0];
 			$var = sprintf("%s", $value);
 
-			$this->bindData[$key2] = $var;
-			$this->stmt .= $cond.$key1."$this->equatorType:".$key2.",";
-			$this->equatorType = "=";
+			$this->bindings[$key2] = $var;
+			$this->stmt .= $condition.$key1."$this->equatorSymbol:".$key2.",";
+			$this->equatorSymbol = "=";
 		}
 
 		$this->stmt = rtrim($this->stmt, ",");

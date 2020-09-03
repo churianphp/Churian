@@ -53,6 +53,6 @@ class UserModel extends Model {
 	}
 }
 
-return new UserModel;
+return new UserModel();
 
 ?>

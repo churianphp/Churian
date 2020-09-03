@@ -1,15 +1,15 @@
 <?php
 
 abstract class Model {
-	protected $now, $db;
+	protected $vars, $texts, $date, $db;
 
 	public function __construct() {
 		global $VARS, $TEXTS;
 
 		$this->vars = $VARS;
 		$this->texts = $TEXTS;
-		$this->now = $VARS["datetime"];
-		$this->db = new DBQuerier;
+		$this->date = $VARS["datetime"];
+		$this->db = new DBQuerier();
 	}
 }
 

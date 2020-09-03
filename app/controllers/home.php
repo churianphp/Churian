@@ -13,6 +13,6 @@ class HomeController extends Controller {
 	}
 }
 
-return new HomeController;
+return new HomeController();
 
 ?>

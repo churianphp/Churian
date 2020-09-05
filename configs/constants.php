@@ -8,7 +8,7 @@ date_default_timezone_set("Africa/Lagos");
 define("APP_NAME", "Churian");
 
 # App URLs
-define("URL", "http://$_SERVER[HTTP_HOST]/");
+define("URL", "//$_SERVER[HTTP_HOST]/");
 define("UPLOADS_URL", URL."public/uploads/");
 define("IMAGES_URL", URL."public/images/");
 define("FILES_URL", URL."public/files/");

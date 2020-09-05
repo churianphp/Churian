@@ -6,10 +6,10 @@ abstract class Model {
 	public function __construct() {
 		global $VARS, $TEXTS;
 
-		$this->vars = $VARS;
-		$this->texts = $TEXTS;
-		$this->date = $VARS["datetime"];
 		$this->db = new DBQuerier();
+		$this->date = $VARS["datetime"];
+		$this->texts = $TEXTS;
+		$this->vars = $VARS;
 	}
 }
 

@@ -1,7 +1,7 @@
 <?php
 
 class UserModel extends Model {
-	public function createUser($name, $email, $password) {
+	public function create($name, $email, $password) {
 		try {
 			$this->db->create("user", [
 				":password" => $password,
@@ -13,7 +13,7 @@ class UserModel extends Model {
 		}
 	}
 
-	public function getAllUsers($tracker, $autoLoad) {
+	public function getAll($tracker, $autoLoad) {
 		$limits = $autoLoad === 0 ? [$tracker, 10] : [0, $autoLoad];
 
 		$data = $this->db->select(["user.name", "user.email"])->from("user")
@@ -22,7 +22,7 @@ class UserModel extends Model {
 
 		if ($data !== false) {
 			return [
-				"count" => $this->numberOfUsers(),
+				"count" => $this->getCount(),
 				"data" => $data
 			];
 		}
@@ -37,7 +37,7 @@ class UserModel extends Model {
 
 		return is_array($data) ? $data[0] : false;
 	}
-	
+
 	public function getByEmail($email) {
 		return $this->get("email", $email);
 	}
@@ -46,7 +46,7 @@ class UserModel extends Model {
 		return $this->get("id", $id);
 	}
 
-	public function numberOfUsers() {
+	public function getCount() {
 		return $this->db->selectCount("id")
 			->from("user")->where(["admin"=>0])
 			->fetch(false, true)[0][0];

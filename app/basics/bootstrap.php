@@ -24,8 +24,8 @@
 			}
 		}
 
-		call_user_func_array(array($this->controller, $this->method), $params ? array_values($params) : array());
-		unset($params);
+		call_user_func_array(array($this->controller, $this->method), isset($params) ? array_values($params) : array());
+		if (isset($params)) unset($params);
 	}
 }
 

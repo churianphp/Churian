@@ -7,16 +7,12 @@ function redirect($destination) {
 	exit;
 }
 
-function removeSlashes($str) {
-	return get_magic_quotes_gpc() ? stripslashes($str) : $str;
-}
-
 function harmlessString($str) {
-	return htmlentities(strip_tags(removeSlashes($str)));
+	return htmlentities(strip_tags($str));
 }
 
 function harmlessHTML($str) {
-	return htmlentities(removeSlashes($str));
+	return htmlentities($str);
 }
 
 function removeSpaces($str) {
@@ -31,6 +27,14 @@ function randomString($length=16, $first="$", $last="#", $string="") {
 	}
 	
 	return $first.$string.$last;
+}
+
+function allIsSet(...$keys) {
+	foreach ($keys as $key) {
+		if (!isset($_POST[$key])) return false;
+	}
+
+	return true;
 }
 
 ?>

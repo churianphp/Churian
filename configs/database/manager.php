@@ -7,7 +7,7 @@ class DBManager {
 
 	private $charset = "utf8";
 	private $database = DBNAME;
-	private $username = DBUSERNAME;
+	private $username = DBUSER;
 	private $password = DBPASS;
 	private $type = DBTYPE;
 	private $host = DBHOST;

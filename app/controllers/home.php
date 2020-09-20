@@ -1,14 +1,16 @@
 <?php
 
 class HomeController extends Controller {
+	protected $userModel;
+
 	public function __construct() {
+		$this->userModel = new UserModel();
 		parent::__construct();
-		$this->userModel = $this->getModel("user");
 	}
 
 	public function index() {
 		$this->renderView("Home", "home/index.php", [
-			"home.js"
+			"home.js",
 		]);
 	}
 }

@@ -4,11 +4,11 @@ abstract class Model {
 	protected $vars, $texts, $date, $db;
 
 	public function __construct() {
-		global $VARS, $TEXTS;
-
 		$this->db = new DBQuerier();
-		$this->date = $VARS["datetime"];
+		
+		global $VARS, $TEXTS;
 		$this->texts = $TEXTS;
+		$this->date = $VARS["datetime"];
 		$this->vars = $VARS;
 	}
 }

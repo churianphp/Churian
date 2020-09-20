@@ -1,12 +1,14 @@
 <?php
 
 class UserModel extends Model {
+	protected $table = "user";
+
 	public function create($name, $email, $password) {
 		try {
-			$this->db->create("user", [
+			$this->db->create($this->table, [
 				":password" => $password,
 				":email" => $email,
-				":name" => $name
+				":name" => $name,
 			])->execute();
 		} catch (PDOException $bug) {
 			die ($bug->getMessage());
@@ -16,7 +18,7 @@ class UserModel extends Model {
 	public function getAll($tracker, $autoLoad) {
 		$limits = $autoLoad === 0 ? [$tracker, 10] : [0, $autoLoad];
 
-		$data = $this->db->select(["user.name", "user.email"])->from("user")
+		$data = $this->db->select(["$this->table.name", "$this->table.email"])->from($this->table)
 			->where(["admin"=>0])->limit($limits[0], $limits[1])
 			->fetch();
 
@@ -31,7 +33,7 @@ class UserModel extends Model {
 	}
 
 	protected function get($column, $value) {
-		$data = $this->db->select()->from("user")
+		$data = $this->db->select()->from($this->table)
 			->where([$column=>$value])
 			->fetch();
 
@@ -48,11 +50,9 @@ class UserModel extends Model {
 
 	public function getCount() {
 		return $this->db->selectCount("id")
-			->from("user")->where(["admin"=>0])
+			->from($this->table)->where(["admin"=>0])
 			->fetch(false, true)[0][0];
 	}
 }
-
-return new UserModel();
 
 ?>

@@ -6,9 +6,9 @@ class DBManager {
 	private static $instance;
 
 	private $charset = "utf8";
-	private $database = DBNAME;
-	private $username = DBUSER;
 	private $password = DBPASS;
+	private $username = DBUSER;
+	private $database = DBNAME;
 	private $type = DBTYPE;
 	private $host = DBHOST;
 	private $connection;

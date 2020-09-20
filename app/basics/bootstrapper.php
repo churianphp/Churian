@@ -1,7 +1,7 @@
 <?php
 
- class Bootstrap {
-	private $controller = "home", $method = "index";
+class Bootstrapper {
+	protected $controller = "home", $method = "index";
 
 	public function __construct() {
 		if (isset($_GET["params"])) {

@@ -9,9 +9,9 @@ class DBQuerier {
 	private $logicalType = "";
 	private $operation = "";
 	private $bindings = [];
-	private $result = "";
 	private $table = "";
 	private $stmt = "";
+	private $res;
 
 	public function __construct() {
 		$this->connection = DBManager::getInstance()->getConnection();
@@ -179,8 +179,8 @@ class DBQuerier {
 	}
 
 	protected function saveInto($table, $data, $operation) {
-		$this->table = sprintf("%s", $table);
 		$this->operation = strtoupper($operation);
+		$this->table = sprintf("%s", $table);
 		$this->stmt = "";
 
 		if ($this->operation === "INSERT") {
@@ -215,7 +215,7 @@ class DBQuerier {
 		$fetchMethod = $fetchAll ? "fetchAll": "fetch";
 
 		try {
-			$this->result = $this->connection->prepare($this->stmt);
+			$this->res = $this->connection->prepare($this->stmt);
 			unset($this->stmt);
 
 			if (isset($this->bindings)) {
@@ -227,21 +227,21 @@ class DBQuerier {
 				$this->bind($key, $value);
 			}
 
-			$this->result->execute();
+			$this->res->execute();
 
 			if ($normalArray) {
-				while ($row = $this->result->$fetchMethod(PDO::FETCH_NUM)) {
+				while ($row = $this->res->$fetchMethod(PDO::FETCH_NUM)) {
 					array_push($returnData, $row);
 				}
 			} else {
-				while ($row = $this->result->$fetchMethod()) {
+				while ($row = $this->res->$fetchMethod()) {
 					array_push($returnData, $row);
 				}
 			}
 
 			$result = $returnData;
 
-			unset($this->result);
+			unset($this->res);
 			unset($returnData);
 
 			return empty($result) ? false : $result;
@@ -256,16 +256,16 @@ class DBQuerier {
 
 		switch ($this->operation) {
 			case "INSERT":
-				$this->result = $this->connection->prepare("INSERT INTO ".$this->table." (".$this->commaPreFix($this->insertColumns).") VALUES($data)");
+				$this->res = $this->connection->prepare("INSERT INTO ".$this->table." (".$this->commaPreFix($this->insertColumns).") VALUES($data)");
 				unset($this->insertColumns);
 				break;
 
 			case "UPDATE":
-				$this->result = $this->connection->prepare("UPDATE ".$this->table." SET ".$this->stmt."");
+				$this->res = $this->connection->prepare("UPDATE ".$this->table." SET ".$this->stmt."");
 				break;
 
 			case "DELETE":
-				$this->result = $this->connection->prepare($this->stmt);
+				$this->res = $this->connection->prepare($this->stmt);
 				break;
 		}
 
@@ -280,11 +280,11 @@ class DBQuerier {
 			$this->bind($key, $value);
 		}
 
-		$this->result->execute();
+		$this->res->execute();
 		
 		if ($this->operation == "INSERT") $this->lastInsertId = $this->connection->lastInsertId();
 
-		unset($this->result);
+		unset($this->res);
 	}
 
 	public function getLastInsertId() {
@@ -324,7 +324,7 @@ class DBQuerier {
 	}
 
 	private function bind($placeholder, $value) {
-		return $this->result->bindValue($placeholder, sprintf("%s", $value), PDO::PARAM_STR);
+		return $this->res->bindValue($placeholder, sprintf("%s", $value), PDO::PARAM_STR);
 	}
 
 	private function commaPrefix($values) {

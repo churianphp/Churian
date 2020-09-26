@@ -13,11 +13,6 @@ class DBManager {
 	private $host = DBHOST;
 	private $connection;
 
-	public static function getInstance() {
-		if (!self::$instance) self::$instance = new self();
-		return self::$instance;
-	}
-
 	private function __construct() {
 		try {
 			$this->connection = new PDO($this->type.":host=".$this->host.";dbname=".$this->database.";charset=".$this->charset, $this->username, $this->password);
@@ -30,6 +25,11 @@ class DBManager {
 
 	private function __clone() {
 
+	}
+
+	public static function getInstance() {
+		if (!self::$instance) self::$instance = new self();
+		return self::$instance;
 	}
 
 	public function getConnection() {

@@ -3,194 +3,98 @@
 require "manager.php";
 
 class DBQuerier {
-	private $connection;
-	private $equatorSymbol = "=";
-	private $lastInsertId = "";
-	private $logicalType = "";
-	private $operation = "";
-	private $bindings = [];
-	private $table = "";
-	private $stmt = "";
-	private $res;
+	protected $insertValues;
+	protected $connection;
+	protected $insertKeys;
+	protected $operation;
+	protected $table;
+	protected $query;
+	protected $res;
 
 	public function __construct() {
 		$this->connection = DBManager::getInstance()->getConnection();
 	}
 
-	public function select($columns=[]) {
-		$stmt = "SELECT ";
-
-		if (empty($columns)) {
-			$stmt .= "*";
-		} else {
-			$columns = $this->commaPrefix($columns);
-			$stmt .= sprintf("%s", $columns);
-		}
-
-		$this->stmt = $stmt;
-		return $this;
+	protected function joinWithCommas($values) {
+		return implode(", ", $values);
 	}
 
-	public function selectCount($column) {
-		$stmt = "SELECT COUNT(".$column.")";
-		$this->stmt = $stmt;
+	public function select($columns) {
+		$this->query = "SELECT $columns";
 		return $this;
 	}
 
 	public function from($table) {
-		$stmt = " FROM ";
-		$this->stmt .= $stmt.sprintf("%s", $table);
+		$this->query .= " FROM $table";
 		return $this;
 	}
 
-	public function in($column, $values=[]) {
-		$stmt = " WHERE $column IN (";
-		$values = $this->commaStringPrefix($values);
-		$this->stmt .= $stmt.sprintf("%s", $values).")";
+	public function having($condition) {
+		$this->query .= " HAVING $condition";
 		return $this;
 	}
 
-	public function where($columns=[], $equatorSymbol="="){
-		$condition = " WHERE ";
-
-		$this->equatorSymbol = $equatorSymbol;
-
-		return $this->setData($condition, $columns);
-	}
-
-	protected function condition($condition, $columns=[], $equatorSymbol) {
-		static $i = 0;
-
-		$this->equatorSymbol = $equatorSymbol;
-
-		$newValues = array();
-		$newKeys = array();
-
-		foreach ($columns as $key => $value) {
-			array_push($newKeys, $key."_____".$i);
-			array_push($newValues, $value);
-		}
-
-		$data = array_combine($newKeys, $newValues);
-		++$i;
-
-		return $this->setData(" $condition ", $data);
-	}
-
-	public function and($columns=[], $equatorSymbol="=") {
-		return $this->condition("AND", $columns, $equatorSymbol);
-	}
-
-	public function or($columns=[], $equatorSymbol="=") {
-		return $this->condition("OR", $columns, $equatorSymbol);
-	}
-
-	public function like($column, $param, $type="") {
-		switch ($this->logicalType) {
-			case "OR":
-			case "AND":
-				$stmt = sprintf("%s", $column)." LIKE ";
-				break;
-
-			default:
-				$stmt = " WHERE ".sprintf("%s", $column)." LIKE ";
-				break;
-		}
-
-		foreach ($param as $key => $keyword) {
-			$key = sprintf("%s", $key);
-
-			switch ($type) {
-				case "START":
-					$keyword = sprintf("%s", "%".$keyword);
-					break;
-
-				case "BOTH":
-					$keyword = sprintf("%s", "%".$keyword."%");
-					break;
-
-				case "END":
-					$keyword = sprintf("%s", $keyword."%");
-					break;
-			}
-
-			$this->bindings[$key] = $keyword;
-			$this->stmt .= $stmt." :$key";
-		}
-
+	public function where($condition) {
+		$this->query .= " WHERE $condition";
 		return $this;
 	}
 
-	public function logicalOpt($type) {
-		switch (strtoupper($type)) {
-			case "OR":
-				$stmt = " OR ";
-				$this->logicalType = "OR";
-				break;
-
-			case "AND":
-				$stmt = " AND ";
-				$this->logicalType = "AND";
-				break;
-		}
-
-		$this->stmt .= $stmt;
+	public function and($condition) {
+		$this->query .= " AND $condition";
 		return $this;
 	}
 
-	public function naturalJoin($table) {
-		$stmt = " NATURAL JOIN ".sprintf("%s", $table);
-		$this->stmt .= $stmt;
+	public function or($condition) {
+		$this->query .= " OR $condition";
 		return $this;
 	}
 
-	public function join($tables, $joinStyle="LEFT JOIN") {
-		$stmt = " ".strtoupper($joinStyle)." ";
-		$stmt .= $this->commaPrefix($tables);
-		$this->stmt .= $stmt;
+	public function join($tables, $joinStyle="INNER") {
+		$this->query .= " $joinStyle JOIN $tables";
 		return $this;
 	}
 
-	public function on($part1, $part2) {
-		$stmt = " ON ";
-		$stmt .= sprintf("%s", $part1)."=".sprintf("%s", $part2);
-		$this->stmt .= $stmt;
+	public function on($condition) {
+		$this->query .= " ON $condition";
 		return $this;
 	}
 
-	public function orderBy($order, $descending=false) {
-		$stmt = " ORDER BY ";
+	public function orderBy($column, $order="ASC") {
+		$this->query .= " ORDER BY $column $order";
+		return $this;
+	}
 
-		if ($descending === true) {
-			$stmt .= sprintf("%s", $order)." DESC";
-		} else {
-			$stmt .= sprintf("%s", $order)." ASC";
-		}
-
-		$this->stmt .= $stmt;
-
+	public function groupBy($column) {
+		$this->query .= " GROUP BY $column";
 		return $this;
 	}
 
 	public function limit($min, $max=null) {
-		if ($max !== null) $this->stmt .= " LIMIT $min, $max";
-		else $this->stmt .= " LIMIT $min";
+		if (isset($max)) $this->query .= " LIMIT $min, $max";
+		else $this->query .= " LIMIT $min";
 		return $this;
 	}
 
 	protected function saveInto($table, $data, $operation) {
-		$this->operation = strtoupper($operation);
 		$this->table = sprintf("%s", $table);
-		$this->stmt = "";
+		$this->operation = $operation;
+		$this->query = "";
 
-		if ($this->operation === "INSERT") {
-			foreach ($data as $key => $value) {
-				$key = preg_replace("/^:/", "", $key);
-				$this->insertColumns[] = $key;
-			}
+		switch ($this->operation) {
+			case "INSERT":
+				$keys = array_map(function($key){return preg_replace("/^:/", "", $key);}, array_keys($data));
+				$values = array_map(function($value){return "'$value'";}, array_values($data));
+				$this->insertValues = $this->joinWithCommas($values);
+				$this->insertKeys = $this->joinWithCommas($keys);
+				break;
+
+			case "UPDATE":
+				foreach ($data as $key => $value) $this->query .= "$key = '$value', ";
+				$this->query = rtrim($this->query, ", ");
+				break;
 		}
 
-		return $this->setData("", $data);
+		return $this;
 	}
 
 	public function create($table, $data) {
@@ -202,93 +106,60 @@ class DBQuerier {
 	}
 
 	public function delete($table) {
+		$this->query = "DELETE FROM $table";
 		$this->operation = "DELETE";
-		$stmt = "DELETE FROM $table";
-		$this->stmt = $stmt;
 		return $this;
 	}
 
-	public function fetch($fetchAll=false, $normalArray=false) {
-		$returnData = [];
-		$dataArray = [];
-
-		$fetchMethod = $fetchAll ? "fetchAll": "fetch";
+	public function fetch($all=false, $num=false) {
+		$fetchMethod = $all ? "fetchAll" : "fetch";
+		$arrayType = $num ? PDO::FETCH_NUM : null;
+		$rows = [];
 
 		try {
-			$this->res = $this->connection->prepare($this->stmt);
-			unset($this->stmt);
-
-			if (isset($this->bindings)) {
-				$dataArray = $this->bindings;
-				unset($this->bindings);
-			}
-
-			foreach ($dataArray as $key => $value) {
-				$this->bind($key, $value);
-			}
+			$this->res = $this->connection->prepare($this->query);
+			unset($this->query);
 
 			$this->res->execute();
 
-			if ($normalArray) {
-				while ($row = $this->res->$fetchMethod(PDO::FETCH_NUM)) {
-					array_push($returnData, $row);
-				}
-			} else {
-				while ($row = $this->res->$fetchMethod()) {
-					array_push($returnData, $row);
-				}
+			while ($row = $this->res->$fetchMethod($arrayType)) {
+				$rows[] = $row;
 			}
 
-			$result = $returnData;
-
+			$result = $rows;
 			unset($this->res);
-			unset($returnData);
+			unset($rows);
 
 			return empty($result) ? false : $result;
 		} catch (PDOException $bug) {
-			die ("Error: ".$bug->getMessage());
+			die ($bug->getMessage());
 		}
 	}
 
 	public function execute() {
-		$data = $this->commaPrefix(array_keys($this->bindings));
-		$dataArray = [];
-
 		switch ($this->operation) {
 			case "INSERT":
-				$this->res = $this->connection->prepare("INSERT INTO ".$this->table." (".$this->commaPreFix($this->insertColumns).") VALUES($data)");
-				unset($this->insertColumns);
+				$this->res = $this->connection->prepare("INSERT INTO $this->table ($this->insertKeys) VALUES($this->insertValues)");
 				break;
 
 			case "UPDATE":
-				$this->res = $this->connection->prepare("UPDATE ".$this->table." SET ".$this->stmt."");
+				$this->res = $this->connection->prepare("UPDATE $this->table SET $this->query");
 				break;
 
 			case "DELETE":
-				$this->res = $this->connection->prepare($this->stmt);
+				$this->res = $this->connection->prepare($this->query);
 				break;
 		}
 
-		unset($this->stmt);
-
-		if ($this->bindings) {
-			$dataArray = $this->bindings;
-			unset($this->bindings);
-		}
-
-		foreach ($dataArray as $key => $value) {
-			$this->bind($key, $value);
-		}
-
 		$this->res->execute();
-		
-		if ($this->operation == "INSERT") $this->lastInsertId = $this->connection->lastInsertId();
 
+		unset($this->insertValues);
+		unset($this->insertKeys);
+
+		unset($this->query);
 		unset($this->res);
-	}
 
-	public function getLastInsertId() {
-		if ($this->lastInsertId) return (int) $this->lastInsertId;
+		return $this->connection->lastInsertId();
 	}
 
 	public function beginTransaction() {
@@ -301,41 +172,6 @@ class DBQuerier {
 
 	public function commitTransaction() {
 		return $this->connection->commit();
-	}
-
-	public function viewQuery() {
-		echo $this->stmt;
-	}
-
-	private function setData($condition, $data) {
-		foreach ($data as $key => $value) {
-			$key1 = preg_match("/(_____\d+)$/", $key) ? preg_replace("/(_____\d+)$/", "", $key) : sprintf("%s", $key);
-			$key2 = explode(".", $key);
-			$key2 = isset($key2[1]) ? $key2[1] : $key2[0];
-			$var = sprintf("%s", $value);
-
-			$this->bindings[$key2] = $var;
-			$this->stmt .= $condition.$key1."$this->equatorSymbol:".$key2.",";
-			$this->equatorSymbol = "=";
-		}
-
-		$this->stmt = rtrim($this->stmt, ",");
-		return $this;
-	}
-
-	private function bind($placeholder, $value) {
-		return $this->res->bindValue($placeholder, sprintf("%s", $value), PDO::PARAM_STR);
-	}
-
-	private function commaPrefix($values) {
-		$params = implode(",", $values);
-		return $params;
-	}
-
-	private function commaStringPrefix($values) {
-		$values = implode("','", $values);
-		$values = "'".$values."'";
-		return $values;
 	}
 }
 

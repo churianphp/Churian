@@ -59,13 +59,13 @@ class DBQuerier {
 		return $this;
 	}
 
-	public function orderBy($column, $order="ASC") {
-		$this->query .= " ORDER BY $column $order";
+	public function orderBy($order) {
+		$this->query .= " ORDER BY $order";
 		return $this;
 	}
 
-	public function groupBy($column) {
-		$this->query .= " GROUP BY $column";
+	public function groupBy($grouping) {
+		$this->query .= " GROUP BY $grouping";
 		return $this;
 	}
 
@@ -76,8 +76,8 @@ class DBQuerier {
 	}
 
 	protected function saveInto($table, $data, $operation) {
-		$this->table = sprintf("%s", $table);
 		$this->operation = $operation;
+		$this->table = $table;
 		$this->query = "";
 
 		switch ($this->operation) {
@@ -111,26 +111,20 @@ class DBQuerier {
 		return $this;
 	}
 
-	public function fetch($all=false, $num=false) {
-		$fetchMethod = $all ? "fetchAll" : "fetch";
-		$arrayType = $num ? PDO::FETCH_NUM : null;
-		$rows = [];
-
+	public function fetch($num=false) {
 		try {
 			$this->res = $this->connection->prepare($this->query);
-			unset($this->query);
-
 			$this->res->execute();
 
-			while ($row = $this->res->$fetchMethod($arrayType)) {
-				$rows[] = $row;
-			}
+			unset($this->query);
 
-			$result = $rows;
+			$rows = $this->res->fetchAll($num ? PDO::FETCH_NUM : null);
+			$data = $rows;
+
 			unset($this->res);
 			unset($rows);
 
-			return empty($result) ? false : $result;
+			if (!empty($data)) return $data;
 		} catch (PDOException $bug) {
 			die ($bug->getMessage());
 		}
@@ -166,12 +160,12 @@ class DBQuerier {
 		return $this->connection->beginTransaction();
 	}
 
-	public function rollBackTransaction() {
-		return $this->connection->rollBack();
-	}
-
 	public function commitTransaction() {
 		return $this->connection->commit();
+	}
+
+	public function rollBackChanges() {
+		return $this->connection->rollBack();
 	}
 }
 

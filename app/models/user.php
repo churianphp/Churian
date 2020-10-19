@@ -20,14 +20,14 @@ class UserModel extends Model {
 			->where("admin = 0")->limit($limits[0], $limits[1])
 			->fetch();
 
-		if (is_array($data)) {
+		if (isset($data)) {
 			return [
 				"count" => $this->getCount(),
 				"data" => $data
 			];
 		}
 
-		return $data;
+		return $data ?? [];
 	}
 
 	protected function get($column, $value) {
@@ -35,7 +35,7 @@ class UserModel extends Model {
 			->where([$column => $value])
 			->fetch();
 
-		return is_array($data) ? $data[0] : false;
+		if (!empty($data)) return $data[0];
 	}
 
 	public function getByEmail($email) {
@@ -49,7 +49,7 @@ class UserModel extends Model {
 	public function getCount() {
 		return $this->db->select("COUNT(id)")
 			->from("user")->where("admin = 0")
-			->fetch(false, true)[0][0];
+			->fetch(true)[0][0];
 	}
 }
 

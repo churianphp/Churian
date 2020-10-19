@@ -37,4 +37,9 @@ function allIsSet(...$keys) {
 	return true;
 }
 
+function dump($data) {
+	file_put_contents("debug.txt", $data, FILE_APPEND|LOCK_EX);
+	file_put_contents("debug.txt", "\n\n", FILE_APPEND);
+}
+
 ?>

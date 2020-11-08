@@ -19,14 +19,14 @@ function removeSpaces($str) {
 	return trim(preg_replace("/\s\s+/", "", $str));
 }
 
-function randomString($length=16, $first="$", $last="#", $string="") {
-	$chars = "!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@%+";
+function randomString($length=8, $string="") {
+	$chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 		
-	for ($i=0; $i < $length-2; $i++) {
-		$string .= $chars[random_int(0, strlen($chars)-1)];
+	for ($i=0; $i < $length; $i++) {
+		$string .= $chars[random_int(0, 61)];
 	}
 	
-	return $first.$string.$last;
+	return $string;
 }
 
 function allIsSet(...$keys) {

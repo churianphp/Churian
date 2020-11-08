@@ -4,8 +4,8 @@ require "manager.php";
 
 class DBQuerier {
 	protected $insertValues;
-	protected $connection;
 	protected $insertKeys;
+	protected $connection;
 	protected $operation;
 	protected $table;
 	protected $query;
@@ -19,8 +19,8 @@ class DBQuerier {
 		return implode(", ", $values);
 	}
 
-	public function select($columns) {
-		$this->query = "SELECT $columns";
+	public function select($selection) {
+		$this->query = "SELECT $selection";
 		return $this;
 	}
 
@@ -49,8 +49,8 @@ class DBQuerier {
 		return $this;
 	}
 
-	public function join($tables, $joinStyle="INNER") {
-		$this->query .= " $joinStyle JOIN $tables";
+	public function join($table, $joinStyle="INNER") {
+		$this->query .= " $joinStyle JOIN $table";
 		return $this;
 	}
 
@@ -59,8 +59,8 @@ class DBQuerier {
 		return $this;
 	}
 
-	public function orderBy($order) {
-		$this->query .= " ORDER BY $order";
+	public function orderBy($ordering) {
+		$this->query .= " ORDER BY $ordering";
 		return $this;
 	}
 
@@ -133,7 +133,7 @@ class DBQuerier {
 	public function execute() {
 		switch ($this->operation) {
 			case "INSERT":
-				$this->res = $this->connection->prepare("INSERT INTO $this->table ($this->insertKeys) VALUES($this->insertValues)");
+				$this->res = $this->connection->prepare("INSERT INTO $this->table ($this->insertKeys) VALUES ($this->insertValues)");
 				break;
 
 			case "UPDATE":
